@@ -163,7 +163,8 @@
 
 				if ( value ) {
 					evt.data.dataValue = value;
-					evt.data.type = 'html';
+					// evt.data.type = 'html';
+					evt.data.type = 'unfiltered_html';
 				} else {
 					// Try to get text data otherwise.
 					value = dataTransfer.getData( 'text/plain' );

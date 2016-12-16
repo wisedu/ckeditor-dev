@@ -30,7 +30,13 @@ var initSample = ( function() {
 
 		// Depending on the wysiwygare plugin availability initialize classic or inline editor.
 		if ( wysiwygareaAvailable ) {
-			CKEDITOR.replace( 'editor' );
+			CKEDITOR.replace( 'editor', {
+				on: {
+					pasteFromWord: function( evt ) {
+						evt.data.mode = "unfiltered_html";
+					}
+				}
+			});
 		} else {
 			editorElement.setAttribute( 'contenteditable', 'true' );
 			CKEDITOR.inline( 'editor' );
@@ -38,6 +44,7 @@ var initSample = ( function() {
 			// TODO we can consider displaying some info box that
 			// without wysiwygarea the classic editor may not work.
 		}
+
 	};
 
 	function isWysiwygareaAvailable() {
