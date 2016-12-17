@@ -30,13 +30,7 @@ var initSample = ( function() {
 
 		// Depending on the wysiwygare plugin availability initialize classic or inline editor.
 		if ( wysiwygareaAvailable ) {
-			CKEDITOR.replace( 'editor', {
-				on: {
-					pasteFromWord: function( evt ) {
-						evt.data.mode = "unfiltered_html";
-					}
-				}
-			});
+			CKEDITOR.replace( 'editor' );
 		} else {
 			editorElement.setAttribute( 'contenteditable', 'true' );
 			CKEDITOR.inline( 'editor' );
