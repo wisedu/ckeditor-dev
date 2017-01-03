@@ -1,6 +1,22 @@
 ﻿CKEditor 4 Changelog
 ====================
 
+## CKEditor 4.6.2
+
+New Features:
+
+* [#16733](http://dev.ckeditor.com/ticket/16733): Added new color palette for [Color Button](http://ckeditor.com/addon/colorbutton) plugin and added [`config.colorButton_colorsPerRow`](http://docs.ckeditor.com/#!/api/CKEDITOR.config-cfg-colorButton_colorsPerRow) option.
+
+Fixed Issues:
+
+* [#13818](http://dev.ckeditor.com/ticket/13818): Fixed: Allow to group [Widget](http://ckeditor.com/addon/widget) [style definitions](http://docs.ckeditor.com/#!/guide/dev_styles-section-widget-styles), so applying one style disables the other.
+* [#16745](http://dev.ckeditor.com/ticket/16745): [Edge] Fixed: List items are lost when pasted from word.
+* [#16682](http://dev.ckeditor.com/ticket/16682): [Edge] Fixed: List gets pasted as a set of paragraphs. Added [`config.pasteFromWord_heuristicsEdgeList`](http://docs.ckeditor.com/#!/api/CKEDITOR.config-cfg-pasteFromWord_heuristicsEdgeList) option.
+* [#10373](http://dev.ckeditor.com/ticket/10373): Fixed: Context menu items can be dragged into the editor.
+* [#16728](http://dev.ckeditor.com/ticket/16728): [IE] Fixed: [Copy Formatting](http://ckeditor.com/addon/copyformatting) breaks editor in Quirks Mode.
+* [#16753](http://dev.ckeditor.com/ticket/16753): Fixed: `element.setSize` sets wrong editor's dimensions if border's width is in fraction of pixels.
+* [#16705](http://dev.ckeditor.com/ticket/16705): [Firefox] Fixed: Unable to paste images as Base64 strings when using [Clipboard](http://ckeditor.com/addon/clipboard).
+
 ## CKEditor 4.6.1
 
 New Features:
