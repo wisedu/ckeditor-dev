@@ -95,6 +95,9 @@
 					} else if ( !editor.config.pasteFromWordPromptCleanup || ( forceFromWord || confirm( editor.lang.pastefromword.confirmCleanup ) ) ) {
 						pfwEvtData.dataValue = CKEDITOR.cleanWord( pfwEvtData.dataValue, editor );
 
+						//qiyu 2017-1-3 优化粘贴内容的格式，：<p><span><span></span></span></p>标记对中间，增加<br>
+						pfwEvtData.dataValue = pfwEvtData.dataValue.replace(/(<p[^>]*><span[^>]*><span[^>]*>)(<\/span><\/span><\/p>)/g, "$1<br>$2");
+
 						editor.fire( 'afterPasteFromWord', pfwEvtData );
 
 						data.dataValue = pfwEvtData.dataValue;
