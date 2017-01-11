@@ -37,7 +37,7 @@
 		}
 	}
 
-	var defaultTabConfig = { id: 1, dir: 1, classes: 1, styles: 1 };
+	var defaultTabConfig = { id: 1, dir: 1, classes: 1, styles: 1 , bhBorderColor: 1, bhBorderStyle: 1};
 
 	CKEDITOR.plugins.add( 'dialogadvtab', {
 		requires: 'dialog',
@@ -179,6 +179,62 @@
 							commit: commitAdvParams
 
 						} ]
+					} );
+				}
+
+				result.elements[ 0 ].children.push( {
+					type: 'hbox',
+					widths: [ '50%', '50%' ],
+					children: [].concat( contents )
+				} );
+			}
+
+			/**
+			 * 添加边框颜色选择
+			 */
+			if ( tabConfig.bhBorderColor || tabConfig.bhBorderClass ) {
+				contents = [];
+
+				if ( tabConfig.bhBorderColor ) {
+					contents.push( {
+						id: 'bhBorderColor',
+						att: 'bh-docs-border-color',
+						type: 'select',
+						requiredContent: element ? element + '[dir]' : null,
+						label: '边框颜色',
+						'default': '',
+						style: 'width:100%',
+						items: [
+							[ '无颜色', '' ],
+							[ '黑色', 'black' ],
+							[ '红色', 'red' ],
+							[ '蓝色', 'blue' ]
+						],
+						setup: setupAdvParams,
+						commit: commitAdvParams
+					} );
+				}
+
+				/**
+				 * 添加边框样式选择
+				 */
+				if ( tabConfig.bhBorderStyle ) {
+					contents.push( {
+						id: 'bhBorderStyle',
+						att: 'bh-docs-border-style',
+						type: 'select',
+						requiredContent: element ? element + '[dir]' : null,
+						label: '边框样式类',
+						'default': '',
+						style: 'width:100%',
+						items: [
+							[ '默认', '' ],
+							[ '1像素边框', '1' ],
+							[ '2像素边框', '2' ],
+							[ '无边框', 'none' ]
+						],
+						setup: setupAdvParams,
+						commit: commitAdvParams
 					} );
 				}
 

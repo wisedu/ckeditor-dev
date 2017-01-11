@@ -206,3 +206,30 @@ a > img {
 	max-height: 1080px;
 	margin:0 auto;
 }
+
+
+/*边框样式*/
+[bh-docs-border-style="1"] td{
+	border-width: 1pt !important;
+}
+
+[bh-docs-border-style="2"] td{
+	border-width: 2pt !important;
+}
+
+[bh-docs-border-style="none"] td{
+	border: none !important;
+}
+
+/*边框颜色*/
+[bh-docs-border-color="black"] td{
+	border-color: #000 !important;
+}
+
+[bh-docs-border-color="red"] td{
+	border-color: red !important;
+}
+
+[bh-docs-border-color="blue"] td{
+	border-color: blue !important;
+}
