@@ -1,5 +1,5 @@
 ﻿/**
- * @license Copyright (c) 2003-2016, CKSource - Frederico Knabben. All rights reserved.
+ * @license Copyright (c) 2003-2017, CKSource - Frederico Knabben. All rights reserved.
  * For licensing, see LICENSE.md or http://ckeditor.com/license
  */
 
@@ -14,7 +14,7 @@
 
 	CKEDITOR.plugins.add( 'widget', {
 		// jscs:disable maximumLineLength
-		lang: 'af,ar,bg,ca,cs,cy,da,de,de-ch,el,en,en-gb,eo,es,eu,fa,fi,fr,gl,he,hr,hu,id,it,ja,km,ko,ku,lv,nb,nl,no,oc,pl,pt,pt-br,ru,sk,sl,sq,sv,tr,tt,ug,uk,vi,zh,zh-cn', // %REMOVE_LINE_CORE%
+		lang: 'af,ar,az,bg,ca,cs,cy,da,de,de-ch,el,en,en-gb,eo,es,eu,fa,fi,fr,gl,he,hr,hu,id,it,ja,km,ko,ku,lv,nb,nl,no,oc,pl,pt,pt-br,ru,sk,sl,sq,sv,tr,tt,ug,uk,vi,zh,zh-cn', // %REMOVE_LINE_CORE%
 		// jscs:enable maximumLineLength
 		requires: 'lineutils,clipboard,widgetselection',
 		onLoad: function() {
@@ -3491,7 +3491,7 @@
 				this.widget = styleDefinition.widget;
 
 				/**
-				 * Array of the groups that this style belongs to.
+				 * An array of groups that this style belongs to.
 				 * Styles assigned to the same group cannot be combined.
 				 *
 				 * @since 4.6.2
@@ -3542,8 +3542,8 @@
 
 			/**
 			 * Removes all styles that belong to the same group as this style. This method will neither add nor remove
-			 * current style.
-			 * Returns true if any style was removed, otherwise returns false.
+			 * the current style.
+			 * Returns `true` if any style was removed, otherwise returns `false`.
 			 *
 			 * @since 4.6.2
 			 * @param {CKEDITOR.editor} editor
