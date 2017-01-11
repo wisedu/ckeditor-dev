@@ -417,10 +417,11 @@ a.cke_button_disabled .cke_button_arrow
 
 /* The dummy element that breaks toolbars.
    Once it is placed, the very next toolbar is moved to the new row. */
+/*去掉工具栏的浮动块*/
 .cke_toolbar_break
 {
-	display: block;
-	clear: left;
+	/*display: block;*/
+	/*clear: left;*/
 }
 
 .cke_rtl .cke_toolbar_break

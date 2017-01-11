@@ -5,16 +5,16 @@
 
 CKEDITOR.editorConfig = function( config ) {
 	// Define changes to default configuration here. For example:
-	// config.language = 'fr';
+	config.language = 'en';
 	// config.uiColor = '#AADC6E';
 	// %REMOVE_START%
 	config.plugins =
-		'about,' +
+		// 'about,' +
 		'a11yhelp,' +
 		'basicstyles,' +
 		'bidi,' +
 		// 'blockquote,' +
-		'clipboard,' +
+		// 'clipboard,' +
 		'colorbutton,' +
 		'colordialog,' +
 		// 'copyformatting,' +
@@ -25,12 +25,12 @@ CKEDITOR.editorConfig = function( config ) {
 		'enterkey,' +
 		'entities,' +
 		'filebrowser,' +
-		'find,' +
+		// 'find,' +
 		// 'flash,' +
 		'floatingspace,' +
 		'font,' +
 		'format,' +
-		'forms,' +
+		// 'forms,' +
 		'horizontalrule,' +
 		'htmlwriter,' +
 		'image,' +
@@ -46,27 +46,27 @@ CKEDITOR.editorConfig = function( config ) {
 		// 'maximize,' +
 		'newpage,' +
 		'pagebreak,' +
-		'pastefromword,' +
-		'pastetext,' +
-		'preview,' +
+		// 'pastefromword,' +
+		// 'pastetext,' +
+		// 'preview,' +
 		'print,' +
 		// 'removeformat,' +
 		'resize,' +
-		'save,' +
-		'selectall,' +
-		'showblocks,' +
+		// 'save,' +
+		// 'selectall,' +
+		// 'showblocks,' +
 		'showborders,' +
 		// 'smiley,' +
 		'sourcearea,' +
 		'specialchar,' +
 		'stylescombo,' +
-		'tab,' +
+		// 'tab,' +
 		'table,' +
 		'tableresize,' +
 		'tabletools,' +
-		'templates,' +
+		// 'templates,' +
 		'toolbar,' +
-		'undo,' +
+		// 'undo,' +
 		'wysiwygarea';
 	// %REMOVE_END%
 };
