@@ -57,7 +57,7 @@ CKEDITOR.editorConfig = function( config ) {
 		// 'showblocks,' +
 		'showborders,' +
 		// 'smiley,' +
-		'sourcearea,' +
+		// 'sourcearea,' +
 		'specialchar,' +
 		'stylescombo,' +
 		// 'tab,' +
