@@ -208,6 +208,12 @@ a > img {
 }
 
 
+/*word粘贴过来的表格的单元格都设定为相对定位*/
+table td{
+	position: relative;
+}
+
+
 /*边框样式*/
 [bh-docs-border-style="1"] td{
 	border-width: 1pt !important;
