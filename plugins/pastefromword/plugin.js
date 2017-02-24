@@ -96,7 +96,14 @@
 						pfwEvtData.dataValue = CKEDITOR.cleanWord( pfwEvtData.dataValue, editor );
 
 						//qiyu 2017-1-3 优化粘贴内容的格式，：<p><span><span></span></span></p>标记对中间，增加<br>
-						pfwEvtData.dataValue = pfwEvtData.dataValue.replace(/(<p[^>]*><span[^>]*><span[^>]*>)(<\/span><\/span><\/p>)/g, "$1<br>$2");
+						function p2div(match, p1, p2, offset, string){
+							return p1.replace("<p", "<div") + "<br>" + p2.replace("p>", "div>");
+						}
+						var html = pfwEvtData.dataValue;
+						html = html.replace(/(<p[^>]*><span[^>]*>)(<\/span><\/p>)/g, p2div);//"$1<br>$2"
+						html = html.replace(/(<p[^>]*><span[^>]*><span[^>]*>)(<\/span><\/span><\/p>)/g, p2div);//"$1<br>$2"
+						html = html.replace(/(<p[^>]*><span[^>]*><span[^>]*><span[^>]*>)(<\/span><\/span><\/span><\/p>)/g, p2div);
+						pfwEvtData.dataValue = html;
 
 						editor.fire( 'afterPasteFromWord', pfwEvtData );
 
