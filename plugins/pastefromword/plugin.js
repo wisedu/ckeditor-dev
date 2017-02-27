@@ -100,6 +100,8 @@
 							return p1.replace("<p", "<div") + "<br>" + p2.replace("p>", "div>");
 						}
 						var html = pfwEvtData.dataValue;
+						html = html.replace(/padding:0cm 5.4pt 0cm 5.4pt/g, "margin: 2px;");
+						html = html.replace(/(<p[^>]*>)(<\/p>)/g, p2div);
 						html = html.replace(/(<p[^>]*><span[^>]*>)(<\/span><\/p>)/g, p2div);//"$1<br>$2"
 						html = html.replace(/(<p[^>]*><span[^>]*><span[^>]*>)(<\/span><\/span><\/p>)/g, p2div);//"$1<br>$2"
 						html = html.replace(/(<p[^>]*><span[^>]*><span[^>]*><span[^>]*>)(<\/span><\/span><\/span><\/p>)/g, p2div);
