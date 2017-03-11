@@ -37,6 +37,10 @@
 		}
 	}
 
+	function setBorderColor() {
+
+	}
+
 	var defaultTabConfig = { id: 1, dir: 1, classes: 1, styles: 1 , bhBorderColor: 1, bhBorderStyle: 1};
 
 	CKEDITOR.plugins.add( 'dialogadvtab', {
@@ -201,7 +205,7 @@
 						att: 'bh-docs-border-color',
 						type: 'select',
 						requiredContent: element ? element + '[dir]' : null,
-						label: '边框颜色',
+						label: '常用边框颜色',
 						'default': '',
 						style: 'width:100%',
 						items: [
@@ -211,7 +215,14 @@
 							[ '蓝色', 'blue' ]
 						],
 						setup: setupAdvParams,
-						commit: commitAdvParams
+						commit: commitAdvParams,
+						//改变选项后,更改自定义输入框的内容,已达到同步修改的问题
+						onChange: function (_res) {
+							var color = _res.data.value;
+							if(color){
+								this.getDialog().getContentElement( 'advanced', 'borderColor' ).setValue( color );
+							}
+						}
 					} );
 				}
 
@@ -237,6 +248,63 @@
 						commit: commitAdvParams
 					} );
 				}
+
+				result.elements[ 0 ].children.push( {
+					type: 'hbox',
+					widths: [ '50%', '50%' ],
+					children: [].concat( contents )
+				} );
+
+
+				contents = [];
+				contents.push({
+					type: 'hbox',
+					padding: 0,
+					widths: [ '50%', '50%' ],
+					children: [ {
+						type: 'text',
+						id: 'borderColor',
+						label: '自定义边框颜色',
+						'default': '',
+						setup: function( element ) {
+							var	borderColorStyle = element.getStyle( 'border-color' );
+							this.getDialog().getContentElement( 'advanced', 'borderColor' ).setValue( borderColorStyle );
+						} ,
+						commit: function( selectedCell ) {
+							var value = this.getValue();
+							var element;
+
+							for ( var i = 0; i < arguments.length; i++ ) {
+								if ( arguments[ i ] instanceof CKEDITOR.dom.element ) {
+									element = arguments[ i ];
+									break;
+								}
+							}
+
+							if ( element ) {
+								if ( value )
+									element.setStyle( 'border-color', value );
+								else
+									element.removeStyle( 'border-color' );
+							}
+						}
+					},
+
+						{
+							type: 'button',
+							id: 'borderColorChoose',
+							'class': 'colorChooser', // jshint ignore:line
+							label: '选择颜色',
+							style: 'margin-top: 22px',
+							onClick: function() {
+								editor.getColorFromDialog( function( color ) {
+									if ( color )
+										this.getDialog().getContentElement( 'advanced', 'borderColor' ).setValue( color );
+								}, this );
+							}
+						}
+					]
+				});
 
 				result.elements[ 0 ].children.push( {
 					type: 'hbox',

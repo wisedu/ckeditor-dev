@@ -18,9 +18,10 @@ body
 	margin: 0;
 }
 
+.bh-docs-page,
 .cke_editable
 {
-	font-size: 13px;
+	font-size: 10.5pt;
 	/*line-height: 1.6;*/
 
 	/* Fix for missing scrollbars with RTL texts. (#10488) */
@@ -103,11 +104,6 @@ pre
 .marker
 {
 	background-color: Yellow;
-}
-
-span[lang]
-{
-	font-style: italic;
 }
 
 figure
@@ -213,6 +209,9 @@ table td{
 	position: relative;
 }
 
+p {
+	margin: 0;
+}
 
 /*边框样式*/
 [bh-docs-border-style="1"] td{
@@ -228,14 +227,23 @@ table td{
 }
 
 /*边框颜色*/
-[bh-docs-border-color="black"] td{
-	border-color: #000 !important;
+/*[bh-docs-border-color="black"] td{*/
+/*border-color: #000 !important;*/
+/*}*/
+
+/*[bh-docs-border-color="red"] td{*/
+/*border-color: red !important;*/
+/*}*/
+
+/*[bh-docs-border-color="blue"] td{*/
+/*border-color: blue !important;*/
+/*}*/
+
+.wistable{
+	margin: 0 auto;
+	width: 900px;
 }
 
-[bh-docs-border-color="red"] td{
-	border-color: red !important;
-}
-
-[bh-docs-border-color="blue"] td{
-	border-color: blue !important;
+table td{
+	border-color: inherit !important;
 }

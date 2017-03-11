@@ -183,6 +183,22 @@
 			 * @param {CKEDITOR.editor} editor This editor instance.
 			 */
 			editor.on( 'unlockSnapshot', undoManager.unlock, undoManager );
+
+			/**
+			 * 在dom结构内容发生改变的时候保存dom数据
+			 * @type {MutationObserver|*}
+			 */
+			// Firefox和Chrome早期版本中带有前缀
+			var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver
+			// 选择目标节点
+			var target = document.querySelector('body');
+			// 创建观察者对象
+			var observer = new MutationObserver(function(mutations) {
+				undoManager.save( );
+			});
+			// 配置观察选项:
+			var config = { subtree: true, childList: true };
+			observer.observe(target, config);
 		}
 	} );
 
@@ -261,8 +277,8 @@
 		 */
 		type: function( keyCode, strokesPerSnapshotExceeded ) {
 			var keyGroup = UndoManager.getKeyGroup( keyCode ),
-				// Count of keystrokes in current a row.
-				// Note if strokesPerSnapshotExceeded will be exceeded, it'll be restarted.
+			// Count of keystrokes in current a row.
+			// Note if strokesPerSnapshotExceeded will be exceeded, it'll be restarted.
 				strokesRecorded = this.strokesRecorded[ keyGroup ] + 1;
 
 			strokesPerSnapshotExceeded =
@@ -638,7 +654,7 @@
 					this.locked = { update: update, level: 1 };
 				}
 
-			// Increase the level of lock.
+				// Increase the level of lock.
 			} else {
 				this.locked.level++;
 			}
@@ -781,25 +797,25 @@
 	 * @param {Boolean} [contentsOnly] If set to `true`, the image will only contain content without the selection.
 	 */
 	var Image = CKEDITOR.plugins.undo.Image = function( editor, contentsOnly ) {
-			this.editor = editor;
+		this.editor = editor;
 
-			editor.fire( 'beforeUndoImage' );
+		editor.fire( 'beforeUndoImage' );
 
-			var contents = editor.getSnapshot();
+		var contents = editor.getSnapshot();
 
-			// In IE, we need to remove the expando attributes.
-			if ( CKEDITOR.env.ie && contents )
-				contents = contents.replace( /\s+data-cke-expando=".*?"/g, '' );
+		// In IE, we need to remove the expando attributes.
+		if ( CKEDITOR.env.ie && contents )
+			contents = contents.replace( /\s+data-cke-expando=".*?"/g, '' );
 
-			this.contents = contents;
+		this.contents = contents;
 
-			if ( !contentsOnly ) {
-				var selection = contents && editor.getSelection();
-				this.bookmarks = selection && selection.createBookmarks2( true );
-			}
+		if ( !contentsOnly ) {
+			var selection = contents && editor.getSelection();
+			this.bookmarks = selection && selection.createBookmarks2( true );
+		}
 
-			editor.fire( 'afterUndoImage' );
-		};
+		editor.fire( 'afterUndoImage' );
+	};
 
 	// Attributes that browser may changing them when setting via innerHTML.
 	var protectedAttrs = /\b(?:href|src|name)="[^"]*?"/gi;
