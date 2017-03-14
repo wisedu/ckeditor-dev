@@ -98,6 +98,13 @@ CKEDITOR.plugins.add( 'table', {
 					command: 'tableDelete',
 					group: 'table',
 					order: 1
+				},
+				//qiyu 2017-2-28
+				wisedutablestyle: {
+					label: "标准表格居中",
+					command: 'wisedutablestyle',
+					group: 'table',
+					order: 1
 				}
 			} );
 		}
@@ -109,13 +116,29 @@ CKEDITOR.plugins.add( 'table', {
 				evt.data.dialog = 'tableProperties';
 		} );
 
+		//qiyu 2017-2-28
+		editor.addCommand( 'wisedutablestyle', createDef( {
+			exec: function( editor ) {
+				var path = editor.elementPath(),
+					table = path.contains( 'table', 1 );
+
+				if ( !table )
+					return;
+
+				table.$.className = "wistable";
+				table.$.style.marginLeft = "";
+				table.$.style.marginRight = "";
+			}
+		} ) );
+
 		// If the "contextmenu" plugin is loaded, register the listeners.
 		if ( editor.contextMenu ) {
 			editor.contextMenu.addListener( function() {
 				// menu item state is resolved on commands.
 				return {
 					tabledelete: CKEDITOR.TRISTATE_OFF,
-					table: CKEDITOR.TRISTATE_OFF
+					table: CKEDITOR.TRISTATE_OFF,
+					wisedutablestyle: CKEDITOR.TRISTATE_OFF
 				};
 			} );
 		}

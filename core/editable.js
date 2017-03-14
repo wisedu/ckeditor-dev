@@ -1747,15 +1747,15 @@
 			// Don't use the "fix for body" feature as auto paragraphing must
 			// be handled during insertion.
 			//qiyu 2016-12-17 转换时会将word格式转出错
-			// data = that.editor.dataProcessor.toHtml( data, {
-			// 	context: null,
-			// 	fixForBody: false,
-			// 	protectedWhitespaces: !!protect,
-			// 	dontFilter: that.dontFilter,
-			// 	// Use the current, contextual settings.
-			// 	filter: that.editor.activeFilter,
-			// 	enterMode: that.editor.activeEnterMode
-			// } );
+			data = that.editor.dataProcessor.toHtml( data, {
+				context: null,
+				fixForBody: false,
+				protectedWhitespaces: !!protect,
+				dontFilter: that.dontFilter,
+				// Use the current, contextual settings.
+				filter: that.editor.activeFilter,
+				enterMode: that.editor.activeEnterMode
+			} );
 
 
 			// Build the node list for insertion.
