@@ -336,8 +336,24 @@
 								this.setValue( selectedTable.getAttribute( 'border' ) || '' );
 							},
 							commit: function( data, selectedTable ) {
-								if ( this.getValue() )
+								if ( this.getValue() ){
+									//边框大小设置无效修改 ghlong 2017-3-31
+									var _style = selectedTable.getAttribute( 'style' );
+									var styleArray = _style.split(';');
+									var styleArrayLen = styleArray.length;
+									for(let i=0; i<styleArrayLen; i++){
+										if(/border\s*:/.test(styleArray[i])){
+											styleArray.splice(i,1);
+											break;
+										}
+									}
+									var newStyle = styleArray.join(';');
+
 									selectedTable.setAttribute( 'border', this.getValue() );
+									setTimeout(function () {
+										selectedTable.setAttribute( 'style', newStyle );
+									}, 100);
+								}
 								else
 									selectedTable.removeAttribute( 'border' );
 							}
