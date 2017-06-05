@@ -14,37 +14,33 @@
 		icons: 'pastefromword,pastefromword-rtl', // %REMOVE_LINE_CORE%
 		hidpi: true, // %REMOVE_LINE_CORE%
 		init: function( editor ) {
-			var commandName = 'pastefromword',
-				// Flag indicate this command is actually been asked instead of a generic pasting.
-				forceFromWord = 0,
+			// Flag indicate this command is actually been asked instead of a generic pasting.
+			var forceFromWord = 0,
 				path = this.path;
 
-			editor.addCommand( commandName, {
+			editor.addCommand( 'pastefromword', {
 				// Snapshots are done manually by editable.insertXXX methods.
 				canUndo: false,
 				async: true,
 
-				exec: function( editor ) {
-					var cmd = this;
-
+				/**
+				 * The Paste from Word command. It will determine its pasted content from Word automatically if possible.
+				 *
+				 * At the time of writing it was working correctly only in Internet Explorer browsers, due to their
+				 * `paste` support in `document.execCommand`.
+				 *
+				 * @private
+				 * @param {CKEDITOR.editor} editor An instance of the editor where the command is being executed.
+				 * @param {Object} [data] The options object.
+				 * @param {Boolean/String} [data.notification=true] Content for a notification shown after an unsuccessful
+				 * paste attempt. If `false`, the notification will not be displayed. This parameter was added in 4.7.0.
+				 * @member CKEDITOR.editor.commands.pastefromword
+				 */
+				exec: function( editor, data ) {
 					forceFromWord = 1;
-					// Force html mode for incomming paste events sequence.
-					editor.once( 'beforePaste', forceHtmlMode );
-
-					editor.getClipboardData( { title: editor.lang.pastefromword.title }, function( data ) {
-						// Do not use editor#paste, because it would start from beforePaste event.
-						data && editor.fire( 'paste', {
-							type: 'html',
-							dataValue: data.dataValue,
-							method: 'paste',
-							dataTransfer: CKEDITOR.plugins.clipboard.initPasteDataTransfer()
-						} );
-
-						editor.fire( 'afterCommandExec', {
-							name: commandName,
-							command: cmd,
-							returnValue: !!data
-						} );
+					editor.execCommand( 'paste', {
+						type: 'html',
+						notification: data && typeof data.notification !== 'undefined' ? data.notification : true
 					} );
 				}
 			} );
@@ -52,12 +48,8 @@
 			// Register the toolbar button.
 			editor.ui.addButton && editor.ui.addButton( 'PasteFromWord', {
 				label: editor.lang.pastefromword.toolbar,
-				command: commandName,
+				command: 'pastefromword',
 				toolbar: 'clipboard,50'
-			} );
-
-			editor.on( 'pasteState', function( evt ) {
-				editor.getCommand( commandName ).setState( evt.data );
 			} );
 
 			// Features brought by this command beside the normal process:
@@ -74,9 +66,11 @@
 					// dataValue should be used.
 					mswordHtml = dataTransferHtml || data.dataValue,
 					pfwEvtData = { dataValue: mswordHtml },
-					wordRegexp = /(class=\"?Mso|style=(?:\"|\')[^\"]*?\bmso\-|w:WordDocument|<o:\w+>|<\/font>)/;
+					officeMetaRegexp = /<meta\s*name=(?:\"|\')?generator(?:\"|\')?\s*content=(?:\"|\')?microsoft/gi,
+					wordRegexp = /(class=\"?Mso|style=(?:\"|\')[^\"]*?\bmso\-|w:WordDocument|<o:\w+>|<\/font>)/,
+					isOfficeContent = officeMetaRegexp.test( mswordHtml ) || wordRegexp.test( mswordHtml );
 
-				if ( !mswordHtml || !( forceFromWord || wordRegexp.test( mswordHtml ) ) ) {
+				if ( !mswordHtml || !( forceFromWord || isOfficeContent ) ) {
 					return;
 				}
 
@@ -141,10 +135,6 @@
 		}
 
 		return !isLoaded;
-	}
-
-	function forceHtmlMode( evt ) {
-		evt.data.type = 'html';
 	}
 } )();
 

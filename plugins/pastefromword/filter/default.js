@@ -95,7 +95,8 @@
 						}
 					};
 
-					if ( element.parent ) {
+					// If the parent is DocumentFragment it does not have any attributes. (#16912)
+					if ( element.parent && element.parent.attributes ) {
 						var attrs = element.parent.attributes,
 							style = attrs.style || attrs.STYLE;
 						if ( style && style.match( /mso\-list:\s?Ignore/ ) ) {
@@ -204,7 +205,15 @@
 						delete element.attributes.size;
 					}
 
-					createAttributeStack( element, filter );
+					// Create style stack for td/th > font if only class
+					// and style attributes are present. Such markup is produced by Excel.
+					if ( CKEDITOR.dtd.tr[ element.parent.name ] &&
+						CKEDITOR.tools.arrayCompare( CKEDITOR.tools.objectKeys( element.attributes ), [ 'class', 'style' ] ) ) {
+
+						Style.createStyleStack( element, filter, editor );
+					} else {
+						createAttributeStack( element, filter );
+					}
 				},
 				'ul': function( element ) {
 					if ( !msoListsDetected ) {
@@ -340,9 +349,8 @@
 						}
 					}
 
-					Style.pushStylesLower( element, {
-						'background': true
-					} );
+					Style.createStyleStack( element, filter, editor,
+						/margin|text\-align|padding|list\-style\-type|width|height|border|white\-space|vertical\-align|background/i );
 				},
 				'v:imagedata': remove,
 				// This is how IE8 presents images.
@@ -377,6 +385,13 @@
 				'style': function() {
 					// We don't want to let any styles in. Firefox tends to add some.
 					return false;
+				},
+
+				'object': function( element ) {
+					// The specs about object `data` attribute:
+					// 		Address of the resource as a valid URL. At least one of data and type must be defined.
+					// If there is not `data`, skip the object element. (#17001)
+					return !!( element.attributes && element.attributes.data );
 				}
 			},
 			attributes: {
@@ -385,7 +400,8 @@
 					return Style.normalizedStyles( element, editor ) || false;
 				},
 				'class': function( classes ) {
-					return falseIfEmpty( classes.replace( /msonormal|msolistparagraph\w*/ig, '' ) );
+					// The (el\d+)|(font\d+) are default Excel classes for table cells and text.
+					return falseIfEmpty( classes.replace( /(el\d+)|(font\d+)|msonormal|msolistparagraph\w*/ig, '' ) );
 				},
 				'cellspacing': remove,
 				'cellpadding': remove,
@@ -420,6 +436,7 @@
 		var writer = new CKEDITOR.htmlParser.basicWriter();
 
 		filter.applyTo( fragment );
+
 		fragment.writeHtml( writer );
 
 		return writer.getHtml();
@@ -548,9 +565,11 @@
 		 * @param {CKEDITOR.htmlParser.element} element
 		 * @param {CKEDITOR.htmlParser.filter} filter
 		 * @param {CKEDITOR.editor} editor
+		 * @param {RegExp} [skipStyles] All matching style names will not be extracted to a style stack. Defaults
+		 * to `/margin|text\-align|width|border|padding/i`.
 		 * @member CKEDITOR.plugins.pastefromword.styles
 		 */
-		createStyleStack: function( element, filter, editor ) {
+		createStyleStack: function( element, filter, editor, skipStyles ) {
 			var children = [],
 				i;
 
@@ -570,7 +589,7 @@
 				styleTopmost = element.name === 'span'; // Ensure that the root element retains at least one style.
 
 			for ( var style in styles ) {
-				if ( style.match( /margin|text\-align|width|border|padding/i ) ) {
+				if ( style.match( skipStyles || /margin|text\-align|width|border|padding/i ) ) {
 					continue;
 				}
 
@@ -643,9 +662,19 @@
 			element.attributes.style = CKEDITOR.tools.writeCssText( sortedStyles );
 		},
 
-		// Moves the element's styles lower in the DOM hierarchy.
-		// Returns true on success.
-		pushStylesLower: function( element, exceptions ) {
+		/**
+		 * Moves the element's styles lower in the DOM hierarchy. If `wrapText==true` and the direct child of an element
+		 * is a text node it will be wrapped in a `span` element.
+		 *
+		 * @param {CKEDITOR.htmlParser.element} element
+		 * @param {Object} exceptions An object containing style names which should not be moved, e.g. `{ background: true }`.
+		 * @param {Boolean} [wrapText=false] Whether a direct text child of an element should be wrapped into a `span` tag
+		 * so that the styles can be moved to it.
+		 * @returns {Boolean} Returns `true` if styles were successfully moved lower.
+		 * @member CKEDITOR.plugins.pastefromword.styles
+		 */
+		pushStylesLower: function( element, exceptions, wrapText ) {
+
 			if ( !element.attributes.style ||
 				element.children.length === 0 ) {
 				return false;
@@ -677,6 +706,13 @@
 				for ( var i = 0; i < element.children.length; i++ ) {
 					var child = element.children[ i ];
 
+					if ( child.type === CKEDITOR.NODE_TEXT && wrapText ) {
+						var wrapper = new CKEDITOR.htmlParser.element( 'span' );
+						wrapper.setHtml( child.value );
+						child.replaceWith( wrapper );
+						child = wrapper;
+					}
+
 					if ( child.type !== CKEDITOR.NODE_ELEMENT ) {
 						continue;
 					}
@@ -697,7 +733,7 @@
 		},
 
 		/**
-		 * Namespace containing styles's inliner.
+		 * Namespace containing the styles inliner.
 		 *
 		 * @since 4.7.0
 		 * @private
@@ -706,7 +742,7 @@
 		inliner: {
 			/**
 			 *
-			 * Styles skipped by the style inliner.
+			 * Styles skipped by the styles inliner.
 			 *
 			 * @property {String[]}
 			 * @private
@@ -721,11 +757,14 @@
 				'page-break-after',
 				'page-break-inside'
 			],
+
 			/**
-			 * Parses content of provided `style` element.
+			 * Parses the content of the provided `style` element.
 			 *
-			 * @param {CKEDITOR.dom.element/String} styles `style` element or CSS text
-			 * @returns {Object} Object containing styles with selectors as keys and styles as values
+			 * @param {CKEDITOR.dom.element/String} styles The `style` element or CSS text.
+			 * @returns {Array} An array containing parsed styles. Each item (style) is an object containing two properties:
+			 * 		selector &ndash; A string representing a CSS selector.
+			 * 		styles &ndash; An object containing a list of styles (e.g. `{ margin: 0, text-align: 'left' }`).
 			 * @since 4.7.0
 			 * @private
 			 * @member CKEDITOR.plugins.pastefromword.styles.inliner
@@ -733,10 +772,7 @@
 			parse: function( styles ) {
 				var parseCssText = CKEDITOR.tools.parseCssText,
 					filterStyles = CKEDITOR.plugins.pastefromword.styles.inliner.filter,
-					stylesObj = {},
-					sheet = styles.is ? styles.$.sheet : createIsolatedStylesheet( styles ),
-					rules,
-					i;
+					sheet = styles.is ? styles.$.sheet : createIsolatedStylesheet( styles );
 
 				function createIsolatedStylesheet( styles ) {
 					var style = new CKEDITOR.dom.element( 'style' ),
@@ -758,26 +794,32 @@
 					return parseCssText( cssText.substring( startIndex + 1, endIndex ), true );
 				}
 
+				var parsedStyles = [],
+					rules,
+					i;
+
 				if ( sheet ) {
 					rules = sheet.cssRules;
 
 					for ( i = 0; i < rules.length; i++ ) {
-						// To detect if the rule contains styles and is not an at-rule, it's enough to check
-						// rule's type.
+						// To detect if the rule contains styles and is not an at-rule, it's enough to check rule's type.
 						if ( rules[ i ].type === window.CSSRule.STYLE_RULE ) {
-							stylesObj[ rules[ i ].selectorText ] = filterStyles( getStyles( rules[ i ].cssText ) );
+							parsedStyles.push( {
+								selector: rules[ i ].selectorText,
+								styles: filterStyles( getStyles( rules[ i ].cssText ) )
+							} );
 						}
 					}
 				}
-
-				return stylesObj;
+				return parsedStyles;
 			},
 
 			/**
-			 * Filters out all unnecessary styles
+			 * Filters out all unnecessary styles.
 			 *
-			 * @param {Object} stylesObj Styles returned by {@link CKEDITOR.plugins.pastefromword.styles#parseStyles}.
-			 * @returns {Object}
+			 * @param {Object} stylesObj An object containing parsed CSS declarations
+			 * as property/value pairs (see {@link CKEDITOR.plugins.pastefromword.styles.inliner#parse}).
+			 * @returns {Object} The `stylesObj` copy with specific styles filtered out.
 			 * @since 4.7.0
 			 * @private
 			 * @member CKEDITOR.plugins.pastefromword.styles.inliner
@@ -798,13 +840,54 @@
 			},
 
 			/**
-			 * Finds and inlines all the `style` elements in given `html` string and returns a document, where
+			 * Sorts the given styles array. All rules containing class selectors will have lower indexes than the rest
+			 * of the rules. Selectors with the same priority will be sorted in a reverse order than in the input array.
+			 *
+			 * @param {Array} stylesArray An array of styles as returned from
+			 * {@link CKEDITOR.plugins.pastefromword.styles.inliner#parse}.
+			 * @returns {Array} Sorted stylesArray.
+			 * @since 4.7.0
+			 * @private
+			 * @member CKEDITOR.plugins.pastefromword.styles.inliner
+			 */
+			sort: function( stylesArray ) {
+
+				// Returns comparison function which sorts all selectors in a way that class selectors are ordered
+				// before the rest of the selectors. The order of the selectors with the same specificity
+				// is reversed so that the most important will be applied first.
+				function getCompareFunction( styles ) {
+					var order = CKEDITOR.tools.array.map( styles, function( item ) {
+						return item.selector;
+					} );
+
+					return function( style1, style2 ) {
+						var value1 = isClassSelector( style1.selector ) ? 1 : 0,
+							value2 = isClassSelector( style2.selector ) ? 1 : 0,
+							result = value2 - value1;
+
+						// If the selectors have same specificity, the latter one should
+						// have higher priority (goes first).
+						return result !== 0 ? result :
+							order.indexOf( style2.selector ) - order.indexOf( style1.selector );
+					};
+				}
+
+				// True if given CSS selector contains a class selector.
+				function isClassSelector( selector ) {
+					return ( '' + selector ).indexOf( '.' ) !== -1;
+				}
+
+				return stylesArray.sort( getCompareFunction( stylesArray ) );
+			},
+
+			/**
+			 * Finds and inlines all the `style` elements in a given `html` string and returns a document where
 			 * all the styles are inlined into appropriate elements.
 			 *
-			 * This is needed because sometimes Microsoft Word does not put style directly to the element, but in
-			 * a generic style sheet.
+			 * This is needed because sometimes Microsoft Word does not put the style directly into the element, but
+			 * into a generic style sheet.
 			 *
-			 * @param {String} html HTML string to be parsed.
+			 * @param {String} html An HTML string to be parsed.
 			 * @returns {CKEDITOR.dom.document}
 			 * @since 4.7.0
 			 * @private
@@ -812,9 +895,10 @@
 			 */
 			inline: function( html ) {
 				var parseStyles = CKEDITOR.plugins.pastefromword.styles.inliner.parse,
+					sortStyles = CKEDITOR.plugins.pastefromword.styles.inliner.sort,
 					document = createTempDocument( html ),
 					stylesTags = document.find( 'style' ),
-					stylesObj = parseStyleTags( stylesTags );
+					stylesArray = sortStyles( parseStyleTags( stylesTags ) );
 
 				function createTempDocument( html ) {
 					var parser = new DOMParser(),
@@ -824,47 +908,37 @@
 				}
 
 				function parseStyleTags( stylesTags ) {
-					var stylesObj = {},
+					var styles = [],
 						i;
 
 					for ( i = 0; i < stylesTags.count(); i++ ) {
-						CKEDITOR.tools.extend( stylesObj, parseStyles( stylesTags.getItem( i ) ) );
+						styles = styles.concat( parseStyles( stylesTags.getItem( i ) ) );
 					}
 
-					return stylesObj;
+					return styles;
 				}
 
 				function applyStyle( document, selector, style ) {
 					var elements = document.find( selector ),
 						element,
-						styleText,
+						oldStyle,
+						newStyle,
 						i;
 
 					for ( i = 0; i < elements.count(); i++ ) {
 						element = elements.getItem( i );
 
-						// Modifying style property leads to removing all unknown styles
-						// from style attribute. To prevent this, only style attribute
-						// is used to manipulate element's styles.
-						styleText = CKEDITOR.tools.writeCssText( style );
-
-						if ( element.getAttribute( 'style' ) ) {
-							styleText += ';' + element.getAttribute( 'style' );
-						}
-
-						element.setAttribute( 'style', styleText );
+						oldStyle = CKEDITOR.tools.parseCssText( element.getAttribute( 'style' ) );
+						// The styles are applied with decreasing priority so we do not want
+						// to overwrite the existing properties.
+						newStyle = CKEDITOR.tools.extend( {}, oldStyle, style );
+						element.setAttribute( 'style', CKEDITOR.tools.writeCssText( newStyle ) );
 					}
 				}
 
-				function applyStyles( document, styles ) {
-					var style;
-
-					for ( style in styles ) {
-						applyStyle( document, style, styles[ style ] );
-					}
-				}
-
-				applyStyles( document, stylesObj );
+				CKEDITOR.tools.array.forEach( stylesArray, function( style ) {
+					applyStyle( document, style.selector, style.styles );
+				} );
 
 				return document;
 			}
@@ -1882,7 +1956,7 @@
 		 *
 		 * Note: It will return `false` when run in a browser other than Microsoft Edge, despite the configuration.
 		 *
-		 * @param {CKEDITOR.editor} item
+		 * @param {CKEDITOR.editor} editor
 		 * @param {CKEDITOR.htmlParser.element} item
 		 * @returns {Boolean}
 		 * @member CKEDITOR.plugins.pastefromword.heuristics
@@ -1908,7 +1982,7 @@
 		},
 
 		/**
-		 * Cleans up given list `item`. It's needed to remove Edge pre marker indentation, since edge pastes
+		 * Cleans up a given list `item`. It is needed to remove Edge pre-marker indentation, since Edge pastes
 		 * list items as plain paragraphs with multiple `&nbsp;`s before the list marker.
 		 *
 		 * @since 4.7.0
@@ -1932,12 +2006,12 @@
 		},
 
 		/**
-		 * Check whether an element is a degenerate list item.
+		 * Checks whether an element is a degenerate list item.
 		 *
 		 * Degenerate list items are elements that have some styles specific to list items,
-		 * but lack the ones that could be used to determine their features(like list level etc.).
+		 * but lack the ones that could be used to determine their features (like list level etc.).
 		 *
-		 * @param {CKEDITOR.editor} item
+		 * @param {CKEDITOR.editor} editor
 		 * @param {CKEDITOR.htmlParser.element} item
 		 * @returns {Boolean}
 		 * @member CKEDITOR.plugins.pastefromword.heuristics
@@ -2059,6 +2133,7 @@
 		 * so that the list structure matches the content copied from Word.
 		 *
 		 * @param {CKEDITOR.htmlParser.element} element
+		 * @member CKEDITOR.plugins.pastefromword.heuristics
 		 * @private
 		 * */
 		correctLevelShift: function( element ) {
@@ -2094,6 +2169,7 @@
 		 *
 		 * @param {CKEDITOR.htmlParser.element} element
 		 * @returns {Boolean}
+		 * @member CKEDITOR.plugins.pastefromword.heuristics
 		 * @private
 		 */
 		isShifted: function( element ) {

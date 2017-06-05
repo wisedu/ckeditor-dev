@@ -2201,7 +2201,7 @@
 			var widths = element.styles.margin.match( /(\-?[\.\d]+\w+)/g ) || [ '0px' ];
 			switch ( widths.length ) {
 				case 1:
-					element.styles.margin = widths[0];
+					mapStyles( [ 0, 0, 0, 0 ] );
 					break;
 				case 2:
 					mapStyles( [ 0, 1, 0, 1 ] );
@@ -2291,7 +2291,7 @@
  *	* {@link CKEDITOR.filter.allowedContentRules} &ndash; defined rules will be added
  *	to the {@link CKEDITOR.editor#filter}.
  *	* `true` &ndash; will disable the filter (data will not be filtered,
- *	all features will be activated).
+ *	all features will be activated). Reading [security best practices](#!/guide/dev_best_practices) before setting `true` is recommended.
  *	* default &ndash; the filter will be configured by loaded features
  *	(toolbar items, commands, etc.).
  *

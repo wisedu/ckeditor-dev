@@ -5,7 +5,9 @@
 	'use strict';
 
 	bender.editor = {
-		config: {},
+		config: {
+			removePlugins: 'tableselection'
+		},
 		allowedForTests: 'table[width];td[id]'
 	};
 
@@ -187,6 +189,20 @@
 			var bot = this.editorBot;
 
 			bender.tools.testInputOut( 'background-conversion', function( source, expected ) {
+				bot.setHtmlWithSelection( source );
+				assert.beautified.html( expected, bot.getData( true ) );
+			} );
+		},
+
+		// (#16971)
+		'test background color extraction': function() {
+			var bot = this.editorBot;
+
+			bender.tools.testInputOut( 'background-extraction', function( source, expected ) {
+				if ( CKEDITOR.env.ie && CKEDITOR.env.version === 8 ) {
+					// Just a regular IE quirks.
+					expected = expected.replace( 'no-repeat center #00cc99', '#00cc99 no-repeat center 50%' );
+				}
 				bot.setHtmlWithSelection( source );
 				assert.beautified.html( expected, bot.getData( true ) );
 			} );
